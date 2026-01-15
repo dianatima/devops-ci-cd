@@ -13,7 +13,6 @@ else
 fi
 
 # Docker Compose
-# Modern compose: "docker compose" plugin
 if ! command -v docker-compose >/dev/null 2>&1; then
   echo "-- Install Docker Compose"
   apt install -y docker-compose
