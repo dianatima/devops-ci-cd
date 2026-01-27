@@ -1,0 +1,46 @@
+image:
+  repository: "<ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com/lesson-7-ecr"
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+replicaCount: 2  # HPA мінімум 2
+
+env:
+  # Postgres
+  POSTGRES_DB: "appdb"
+  POSTGRES_USER: "appuser"
+  POSTGRES_PASSWORD: "apppass"
+  DB_HOST: "db"
+  DB_PORT: "5432"
+  # Django
+  DJANGO_SECRET_KEY: "dev-secret-please-change"
+  DJANGO_DEBUG: "1"
+  DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+ingress:
+  enabled: false
+  className: nginx
+  host: yourdomain.com
+  path: /
+  pathType: Prefix
+  tls: false 

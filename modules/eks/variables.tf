@@ -1,0 +1,10 @@
+variable "cluster_name"       { type = string }
+variable "kubernetes_version" { type = string }
+variable "node_group_name"    { type = string }
+variable "instance_types"     { type = list(string) }
+variable "desired_size"       { type = number }
+variable "min_size"           { type = number }
+variable "max_size"           { type = number }
+variable "subnet_ids_private" { type = list(string) }
+variable "subnet_ids_public"  { type = list(string) }
+variable "vpc_id"             { type = string }

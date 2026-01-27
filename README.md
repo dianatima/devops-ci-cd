@@ -1,29 +1,40 @@
-Terraform AWS Infrastructure — lesson-5
+Lesson 7 — Terraform + EKS + ECR + Helm
 
-Навчальний проєкт з Terraform для створення базової AWS-інфраструктури з використанням модульного підходу.
+Навчальний проєкт з Terraform та Helm для розгортання Kubernetes-інфраструктури в AWS
+та деплою Django-застосунку.
 
-Проєкт демонструє:
-- роботу з Terraform backend (S3 + DynamoDB),
-- побудову мережевої інфраструктури (VPC),
-- створення ECR репозиторію для Docker-образів.
+Реалізовано:
 
-СТРУКТУРА ПРОЄКТУ:
+- Terraform backend (S3 + DynamoDB) для збереження state
+- VPC з публічними та приватними підмережами
+- ECR для зберігання Docker-образів
+- EKS (Kubernetes cluster)** з node group
+- Helm-chart для деплою Django-застосунку
+- Service типу LoadBalancer**
+- HPA (2–6 pod-ів, CPU > 70%)
+- ConfigMap для змінних середовища
 
-- main.tf — підключення та конфігурація всіх модулів
-- backend.tf — налаштування збереження Terraform state у S3 з блокуванням через DynamoDB
-- outputs.tf — загальні вихідні дані з усіх модулів
+Опис модулів:
 
-МОДУЛІ:
+- s3-backend — S3 bucket та DynamoDB table для Terraform state
+- vpc — мережа AWS (VPC, підмережі, маршрути)
+- ecr — репозиторій для Docker-образів
+- eks — Kubernetes-кластер та node group
 
-- modules/s3-backend — створення S3-бакета для state-файлів та DynamoDB таблиці для lock-механізму
-- modules/vpc — створення VPC з публічними і приватними підмережами та маршрутизацією
-- modules/ecr — створення ECR репозиторію з увімкненим скануванням образів
+Helm-chart `django-app` включає:
 
-ЗАПУСК ПРОЄКТУ:
+- Deployment Django-застосунку з образом з ECR
+- Service типу LoadBalancer
+- Horizontal Pod Autoscaler
+- ConfigMap для змінних середовища
 
-Для ініціалізації та керування інфраструктурою використовуйте стандартні команди Terraform:
+Основні параметри задаються у `values.yaml`.
 
+
+Запуск інфраструктури:
 terraform init
 terraform plan
 terraform apply
+
+Видалення ресурсів:
 terraform destroy
