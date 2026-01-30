@@ -1,0 +1,65 @@
+controller:
+  installPlugins:
+    - kubernetes:4197.v6d7e9b_544223
+    - workflow-aggregator:590.v6a_d052e5a_a_b_5
+    - git:5.2.2
+    - configuration-as-code:1834.vb_71b_1d523b_1b_
+    - credentials:1337.v60b_d7b_c7b_c9f
+    - workflow-job:1400.v7fd111b_ec82f
+    - matrix-auth:3.2.2
+
+  JCasC:
+    defaultConfig: true
+    configScripts:
+      k8s-agent: |
+        jenkins:
+          clouds:
+            - kubernetes:
+                name: "kubernetes"
+                templates:
+                  - name: "kaniko"
+                    label: "kaniko"
+                    serviceAccount: "jenkins"
+                    containers:
+                      - name: "kaniko"
+                        image: "gcr.io/kaniko-project/executor:latest"
+                        command: ["cat"]
+                        ttyEnabled: true
+                        envVars:
+                          - key: AWS_DEFAULT_REGION
+                            value: us-west-2
+                        volumeMounts:
+                          - mountPath: "/kaniko/.cache"
+                            name: "kaniko-cache"
+                    volumes:
+                      - emptyDirVolume:
+                          memory: false
+                        mountPath: "/kaniko/.cache"
+
+  admin:
+    createSecret: true
+
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+agent:
+  enabled: false
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: jenkins
+
+persistence:
+  enabled: true
+  storageClass: "gp2"
+  size: 8Gi
+
+service:
+  type: LoadBalancer

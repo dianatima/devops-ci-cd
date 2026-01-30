@@ -1,0 +1,13 @@
+variable "kubeconfig_path"  { type = string }
+variable "namespace"        { type = string }
+variable "release_name"     { type = string }
+variable "chart"            { type = string }
+variable "chart_version"    { type = string }
+
+# App, яке синхронізує чарт
+variable "app_name"          { type = string }
+variable "app_namespace"     { type = string }
+variable "helm_repo_url"     { type = string }
+variable "helm_repo_branch"  { type = string }
+variable "helm_chart_path"   { type = string }
+variable "helm_release_name" { type = string }
