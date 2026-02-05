@@ -1,4 +1,3 @@
-/* IAM роль для control plane */
 resource "aws_iam_role" "eks_cluster" {
   name = "${var.cluster_name}-cluster-role"
   assume_role_policy = jsonencode({
@@ -16,14 +15,12 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSVPCResourceContr
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
 }
 
-/* Security group для кластера (опц.) */
 resource "aws_security_group" "cluster" {
   name        = "${var.cluster_name}-cluster-sg"
   description = "EKS Cluster security group"
   vpc_id      = var.vpc_id
 }
 
-/* Кластер */
 resource "aws_eks_cluster" "this" {
   name     = var.cluster_name
   role_arn = aws_iam_role.eks_cluster.arn
@@ -42,7 +39,6 @@ resource "aws_eks_cluster" "this" {
   ]
 }
 
-/* NodeGroup IAM роль */
 resource "aws_iam_role" "nodegroup" {
   name = "${var.cluster_name}-ng-role"
   assume_role_policy = jsonencode({
@@ -64,7 +60,6 @@ resource "aws_iam_role_policy_attachment" "ng_AmazonEC2ContainerRegistryReadOnly
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-/* Managed Node Group у приватних сабнетах */
 resource "aws_eks_node_group" "this" {
   cluster_name    = aws_eks_cluster.this.name
   node_group_name = var.node_group_name

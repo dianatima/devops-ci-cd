@@ -35,24 +35,27 @@ module "eks" {
 }
 
 module "jenkins" {
-  source          = "./modules/jenkins"
-  kubeconfig_path = "~/.kube/config"
-  namespace       = "jenkins"
-  chart_version   = "5.0.16"
-  admin_user      = "admin"
-  admin_password  = "admin12345"
-  cluster_name    = module.vpc.vpc_name
+  source            = "./modules/jenkins"
+  kubeconfig_path   = var.kubeconfig_path
+  namespace         = var.jenkins_namespace
+  release_name      = var.jenkins_release
+  chart             = var.jenkins_chart
+  chart_version     = var.jenkins_chart_ver
   ecr_repo_url      = module.ecr.repository_url
 }
 
-module "argo_cd" {
-  source              = "./modules/argo_cd"
-  kubeconfig_path     = "~/.kube/config"
-  namespace           = "argocd"
-  repo_name           = "example-repo"
-  repo_url            = "https://github.com/YOUR_USERNAME/example-repo.git" # <-- свій url
-  app_name            = "example-app"
-  app_path            = "django-chart"
-  app_target_revision = "main"
-  app_destination_namespace = "default"
+module "argocd" {
+  source               = "./modules/argo_cd"
+  kubeconfig_path      = var.kubeconfig_path
+  namespace            = var.argocd_namespace
+  release_name         = var.argocd_release
+  chart                = var.argocd_chart
+  chart_version        = var.argocd_chart_ver
+
+  app_name             = "django-app"
+  app_namespace        = "default"
+  helm_repo_url        = "git@github.com:org/helm-repo.git"   # замінити
+  helm_repo_branch     = "main"
+  helm_chart_path      = "charts/django-app"
+  helm_release_name    = "django"
 }
