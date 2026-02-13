@@ -12,26 +12,28 @@ module "vpc" {
   public_subnets     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   private_subnets    = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
   availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
-  vpc_name           = "lesson-9-vpc"
+  vpc_name           = "lesson-10-vpc"
 }
 
 # Підключаємо модуль ECR
 module "ecr" {
   source      = "./modules/ecr"
-  ecr_name    = "lesson-9-ecr"
+  ecr_name    = "lesson-10-ecr"
   scan_on_push = true
 }
 
 module "eks" {
-  source          = "./modules/eks"
-  cluster_name    = "lesson-9-eks"
-  subnet_ids      = module.vpc.public_subnet_ids
-  instance_type   = "t3.micro"
-  node_group_name = "general"
-
-  desired_size = 1
-  max_size     = 2
-  min_size     = 1
+  source              = "./modules/eks"
+  cluster_name        = var.cluster_name
+  kubernetes_version  = var.kubernetes_version
+  node_group_name     = var.node_group_name
+  instance_types      = var.instance_types
+  desired_size        = var.desired_size
+  min_size            = var.min_size
+  max_size            = var.max_size
+  subnet_ids_private  = module.vpc.private_subnet_ids
+  subnet_ids_public   = module.vpc.public_subnet_ids
+  vpc_id              = module.vpc.vpc_id
 }
 
 module "jenkins" {
@@ -58,4 +60,49 @@ module "argocd" {
   helm_repo_branch     = "main"
   helm_chart_path      = "charts/django-app"
   helm_release_name    = "django"
+}
+
+module "rds" {
+  source = "./modules/rds"
+
+  name_prefix = "lesson-db"
+  vpc_id      = var.vpc_id
+  subnet_ids  = var.subnet_ids
+
+  # перемикач Aurora / звичайна RDS
+  use_aurora       = true               # =false → буде aws_db_instance
+  engine_family    = "postgres"        # "postgres" або "mysql"
+
+  # версії/движки
+  # для RDS: postgres→"postgres", mysql→"mysql"
+  rds_engine          = "postgres"
+  rds_engine_version  = "16.3"
+
+  # для Aurora: postgres→"aurora-postgresql", mysql→"aurora-mysql"
+  aurora_engine         = "aurora-postgresql"
+  aurora_engine_version = "16.1"
+
+  # класи машин
+  instance_class = "db.t3.medium"
+
+  # звичайна RDS
+  allocated_storage = 20
+  storage_type      = "gp3"
+  multi_az          = false
+
+  # мережа/доступ
+  allowed_cidr_blocks = ["0.0.0.0/0"]  
+  port                = 5432             # 5432 для postgres, 3306 для mysql
+
+  # креденшели
+  master_username = "appuser"
+  master_password = "ChangeMePlease123!"  
+
+  # параметри БД 
+  db_name         = var.db_name
+  parameters = {
+    max_connections = "200"
+    log_statement   = "none"    # none/mod/all
+    work_mem        = "4MB"
+  }
 }
