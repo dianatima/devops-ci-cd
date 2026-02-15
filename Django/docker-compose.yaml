@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: app.settings
+      DEBUG: "true"
+      ALLOWED_HOSTS: "*"

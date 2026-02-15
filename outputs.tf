@@ -37,10 +37,6 @@ output "eks_cluster_name" {
   value       = module.eks.cluster_name
 }
 
-output "eks_cluster_endpoint" {
-  value       = module.eks.cluster_endpoint
-}
-
 output "jenkins_url" {
   value = module.jenkins.url
 }
@@ -69,4 +65,8 @@ output "db_port" {
 
 output "db_engine" {
   value = module.rds.engine
+}
+
+output "grafana_note" {
+  value = "Port-forward Grafana: kubectl -n monitoring port-forward svc/kube-prometheus-grafana 3000:80"
 }

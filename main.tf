@@ -12,13 +12,13 @@ module "vpc" {
   public_subnets     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   private_subnets    = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
   availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
-  vpc_name           = "lesson-10-vpc"
+  vpc_name           = "final-project-vpc"
 }
 
 # Підключаємо модуль ECR
 module "ecr" {
   source      = "./modules/ecr"
-  ecr_name    = "lesson-10-ecr"
+  ecr_name    = "final-project-ecr"
   scan_on_push = true
 }
 
@@ -54,55 +54,56 @@ module "argocd" {
   chart                = var.argocd_chart
   chart_version        = var.argocd_chart_ver
 
-  app_name             = "django-app"
-  app_namespace        = "default"
-  helm_repo_url        = "git@github.com:org/helm-repo.git"   # замінити
-  helm_repo_branch     = "main"
-  helm_chart_path      = "charts/django-app"
-  helm_release_name    = "django"
+  app_name          = "django-app"
+  app_namespace     = "default"
+  helm_repo_url     = var.helm_repo_url
+  helm_repo_branch  = var.helm_repo_branch
+  helm_chart_path   = var.helm_chart_path
+  helm_release_name = var.helm_release_name
 }
 
 module "rds" {
   source = "./modules/rds"
 
-  name_prefix = "lesson-db"
-  vpc_id      = var.vpc_id
-  subnet_ids  = var.subnet_ids
+  name_prefix          = "final-db"
+  vpc_id               = module.vpc.vpc_id
+  subnet_ids           = module.vpc.private_subnet_ids
 
-  # перемикач Aurora / звичайна RDS
-  use_aurora       = true               # =false → буде aws_db_instance
-  engine_family    = "postgres"        # "postgres" або "mysql"
+  use_aurora           = var.use_aurora
+  engine_family        = var.engine_family
+  rds_engine           = var.rds_engine
+  rds_engine_version   = var.rds_engine_version
+  aurora_engine        = var.aurora_engine
+  aurora_engine_version= var.aurora_engine_version
 
-  # версії/движки
-  # для RDS: postgres→"postgres", mysql→"mysql"
-  rds_engine          = "postgres"
-  rds_engine_version  = "16.3"
+  instance_class       = var.db_instance_class
+  allocated_storage    = var.db_allocated_storage
+  storage_type         = var.db_storage_type
+  multi_az             = var.db_multi_az
 
-  # для Aurora: postgres→"aurora-postgresql", mysql→"aurora-mysql"
-  aurora_engine         = "aurora-postgresql"
-  aurora_engine_version = "16.1"
+  allowed_cidr_blocks  = var.db_allowed_cidrs
+  port                 = var.db_port
+  publicly_accessible  = var.db_publicly_accessible
 
-  # класи машин
-  instance_class = "db.t3.medium"
+  master_username      = var.db_master_username
+  master_password      = var.db_master_password
+  db_name              = var.db_name
 
-  # звичайна RDS
-  allocated_storage = 20
-  storage_type      = "gp3"
-  multi_az          = false
-
-  # мережа/доступ
-  allowed_cidr_blocks = ["0.0.0.0/0"]  
-  port                = 5432             # 5432 для postgres, 3306 для mysql
-
-  # креденшели
-  master_username = "appuser"
-  master_password = "ChangeMePlease123!"  
-
-  # параметри БД 
-  db_name         = var.db_name
   parameters = {
     max_connections = "200"
-    log_statement   = "none"    # none/mod/all
+    log_statement   = "none"
     work_mem        = "4MB"
   }
+
+  backup_retention_days = var.db_backup_days
+  deletion_protection   = var.db_deletion_protection
+}
+
+module "monitoring" {
+  source          = "./modules/monitoring"
+  kubeconfig_path = var.kubeconfig_path
+  namespace       = var.monitoring_namespace
+  release_name    = var.kps_release
+  chart           = var.kps_chart
+  chart_version   = var.kps_chart_ver
 }
