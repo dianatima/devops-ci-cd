@@ -3,8 +3,6 @@ variable "namespace"        { type = string }
 variable "release_name"     { type = string }
 variable "chart"            { type = string }
 variable "chart_version"    { type = string }
-
-# App, яке синхронізує чарт
 variable "app_name"          { type = string }
 variable "app_namespace"     { type = string }
 variable "helm_repo_url"     { type = string }
